@@ -1,4 +1,4 @@
-# Form Builder - RISTEK Fasilkom UI 2026
+# Form Builder
 
 Aplikasi Form Builder seperti Google Forms dengan React + Next.js + Prisma.
 

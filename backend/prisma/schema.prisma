@@ -17,11 +17,13 @@ enum FormStatus {
 
 enum QuestionType {
   short_answer
+  long_answer
   multiple_choice
   multiple_choice_dropdown
   page_break
   text_block
-  rating
+  linear_scale
+  star_rating
 }
 
 model User {
@@ -56,6 +58,8 @@ model Question {
   order             Int
   options           String[]     @default([])
   allowMultiple     Boolean      @default(false)
+  labelMin          String?
+  labelMax          String?
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 

@@ -453,6 +453,49 @@ p {
   cursor: not-allowed;
 }
 
+.btn-icon {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: background 0.2s, color 0.2s;
+}
+
+.btn-icon:hover {
+  background: var(--bg-2);
+  color: var(--danger);
+}
+
+.btn-icon:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ─── Checkbox Field ─── */
+
+.field-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.field-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.field-checkbox span {
+  font-size: 0.875rem;
+  color: var(--ink);
+}
+
 /* ─── Form Detail ─── */
 
 .detail {
@@ -534,7 +577,7 @@ p {
 .question-title {
   font-weight: 500;
   font-size: 0.95rem;
-  margin-bottom: 0.25rem;
+  margin-bottom: 1rem;
 }
 
 .question-meta {
@@ -544,6 +587,7 @@ p {
   margin-top: 0.25rem;
 }
 
+.btn-edit-question,
 .btn-delete-question {
   background: none;
   border: none;
@@ -560,6 +604,11 @@ p {
   justify-content: center;
 }
 
+.btn-edit-question:hover {
+  opacity: 1;
+  background: #e3f2fd;
+}
+
 .btn-delete-question:hover {
   opacity: 1;
   background: var(--danger-light);
@@ -574,7 +623,8 @@ p {
   border-radius: 4px;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.7rem;
+  margin-top: 0.75rem;
 }
 
 .option-preview {
@@ -719,14 +769,108 @@ p {
 
 .rating-preview {
   display: flex;
-  gap: 0.35rem;
-  margin-top: 0.25rem;
+  justify-content: center;
+  gap: 2.5rem;
+  margin-top: 0.75rem;
 }
 
-.rating-star {
-  font-size: 1.5rem;
-  color: #f9a825;
-  line-height: 1;
+.rating-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid #c4896e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #5d4037;
+  background-color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.rating-circle:hover {
+  background-color: #c4896e;
+  color: #fff;
+  transform: scale(1.05);
+}
+
+/* ─── Linear Scale Preview ─── */
+
+.linear-scale-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.linear-scale-form-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.scale-labels-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 360px;
+}
+
+.scale-label,
+.scale-label-text {
+  font-size: 0.85rem;
+  color: #5d4037;
+  font-weight: 500;
+  text-align: center;
+  word-break: break-word;
+  max-width: 45%;
+}
+
+/* ─── Star Rating Preview ─── */
+
+.star-rating-preview {
+  display: flex;
+  justify-content: center;
+  gap: 2.5rem;
+  margin-top: 0.75rem;
+}
+
+.star-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.star-number {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #5d4037;
+}
+
+.star-icon {
+  font-size: 2rem;
+  color: #d4d4d4;
+  cursor: pointer;
+  transition: transform 0.15s ease, color 0.15s ease;
+  user-select: none;
+}
+
+.star-icon.star-filled {
+  color: #f5a623;
+}
+
+.star-icon.star-empty {
+  color: #d4d4d4;
+}
+
+.star-icon:hover {
+  transform: scale(1.2);
 }
 
 /* ─── Add Item Menu ─── */
@@ -769,6 +913,7 @@ p {
 .field-textarea {
   resize: vertical;
   min-height: 60px;
+  width: 100%;
   font-family: inherit;
 }
 
@@ -849,6 +994,7 @@ p {
   padding-bottom: 0.4rem;
   max-width: 240px;
   font-size: 0.85rem;
+  margin-top: 0.75rem;
 }
 
 /* ─── Modal ─── */
@@ -969,6 +1115,15 @@ p {
 
 .option-row .field-input {
   flex: 1;
+}
+
+.option-text {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-2);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  color: var(--ink);
 }
 
 .btn-remove-option {

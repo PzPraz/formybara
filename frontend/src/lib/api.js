@@ -108,7 +108,7 @@ export async function getForms() {
   return response.json();
 }
 
-export async function getForm(id) {
+export async function getFormById(id) {
   const token = getToken();
   if (!token) throw new Error("Sesi telah berakhir. Silakan login kembali.");
 
@@ -181,4 +181,89 @@ export async function deleteForm(id) {
   }
 
   return response.json();
+}
+
+// ==================== Questions API ====================
+
+export async function createQuestion(formId, data) {
+  const token = getToken();
+  if (!token) throw new Error("Sesi telah berakhir. Silakan login kembali.");
+
+  const response = await fetchWithTimeout(`${API_BASE}/forms/${formId}/questions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response);
+  }
+
+  return response.json();
+}
+
+export async function getQuestions(formId) {
+  const token = getToken();
+  if (!token) throw new Error("Sesi telah berakhir. Silakan login kembali.");
+
+  const response = await fetchWithTimeout(`${API_BASE}/forms/${formId}/questions`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response);
+  }
+
+  return response.json();
+}
+
+export async function updateQuestion(formId, questionId, data) {
+  const token = getToken();
+  if (!token) throw new Error("Sesi telah berakhir. Silakan login kembali.");
+
+  const response = await fetchWithTimeout(`${API_BASE}/forms/${formId}/questions/${questionId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response);
+  }
+
+  return response.json();
+}
+
+export async function deleteQuestion(formId, questionId) {
+  const token = getToken();
+  if (!token) throw new Error("Sesi telah berakhir. Silakan login kembali.");
+
+  const response = await fetchWithTimeout(`${API_BASE}/forms/${formId}/questions/${questionId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response);
+  }
+
+  return response.json();
+}
+
+export async function reorderQuestions(formId, orderedIds) {
+    return request(`/api/forms/${formId}/questions/reorder`, {
+        method: 'PATCH',
+        headers: { ...authHeaders() },
+        body: JSON.stringify({ orderedIds }),
+    });
 }
