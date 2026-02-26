@@ -78,7 +78,31 @@ export async function loginUser({ email, password }) {
 
   return response.json();
 }
+// ===== Public (no auth) =====
 
+export async function getPublicForm(formId) {
+  const response = await fetchWithTimeout(`${API_BASE}/forms/${formId}/public`);
+
+  if (!response.ok) {
+    await handleErrorResponse(response);
+  }
+
+  return response.json();
+}
+
+export async function submitResponse(formId, data) {
+  const response = await fetchWithTimeout(`${API_BASE}/forms/${formId}/responses`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response);
+  }
+
+  return response.json();
+}
 export function storeToken(token) {
   localStorage.setItem("token", token);
 }

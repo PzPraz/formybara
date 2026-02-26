@@ -44,6 +44,7 @@ model Form {
   ownerId     String
   owner       User         @relation(fields: [ownerId], references: [id])
   questions   Question[]
+  responses   Response[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
@@ -64,4 +65,28 @@ model Question {
   updatedAt         DateTime     @updatedAt
 
   @@index([formId])
+}
+
+model Response {
+  id            String   @id @default(cuid())
+  formId        String
+  form          Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+  respondentName String?
+  answers       Answer[]
+  submittedAt   DateTime @default(now())
+
+  @@index([formId])
+}
+
+model Answer {
+  id          String   @id @default(cuid())
+  responseId  String
+  response    Response @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  questionId  String
+  value       String   @default("")
+  values      String[] @default([])
+  createdAt   DateTime @default(now())
+
+  @@index([responseId])
+  @@index([questionId])
 }

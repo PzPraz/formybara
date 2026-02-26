@@ -134,6 +134,53 @@ function StarRatingPreview() {
   );
 }
 
+/* ── Interactive inputs for preview mode ── */
+function StarRatingInput({ value, onChange }) {
+  const [hovered, setHovered] = useState(0);
+  return (
+    <div className="star-rating-preview" onMouseLeave={() => setHovered(0)}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <div key={n} className="star-item">
+          <span className="star-number">{n}</span>
+          <span
+            className={`star-icon ${n <= (hovered || value) ? "star-filled" : "star-empty"}`}
+            onClick={() => onChange(n === value ? 0 : n)}
+            onMouseEnter={() => setHovered(n)}
+            style={{ cursor: "pointer" }}
+          >
+            &#9733;
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function LinearScaleInput({ value, onChange, labelMin, labelMax }) {
+  return (
+    <div className="linear-scale-preview">
+      <div className="rating-preview">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <div
+            key={n}
+            className={`rating-circle ${value === String(n) ? "rating-circle-selected" : ""}`}
+            onClick={() => onChange(String(n))}
+            style={{ cursor: "pointer" }}
+          >
+            {n}
+          </div>
+        ))}
+      </div>
+      {(labelMin || labelMax) && (
+        <div className="scale-labels-row">
+          <span className="scale-label">{labelMin || ""}</span>
+          <span className="scale-label">{labelMax || ""}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function QuestionContent({ question }) {
   if (question.type === "page_break") {
     return (
@@ -248,6 +295,10 @@ export default function FormDetail() {
   const [formError, setFormError] = useState("");
   const [snackbar, setSnackbar] = useState({ open: false, message: "", variant: "default", undoData: null });
   const [deleteModal, setDeleteModal] = useState(false);
+  const [previewMode, setPreviewMode] = useState(false);
+  const [previewAnswers, setPreviewAnswers] = useState({});
+  const [previewPage, setPreviewPage] = useState(0);
+  const [previewFieldErrors, setPreviewFieldErrors] = useState({});
   const [draft, setDraft] = useState({
     title: "",
     description: "",
@@ -495,6 +546,72 @@ export default function FormDetail() {
     setEditingQuestion(null);
   };
 
+  /* ── Preview mode helpers ── */
+  const getPreviewPages = () => {
+    const pages = [[]];
+    for (const q of questions) {
+      if (q.type === "page_break") {
+        pages.push([]);
+      } else {
+        pages[pages.length - 1].push(q);
+      }
+    }
+    return pages;
+  };
+
+  const setPreviewAnswer = (qId, val) => {
+    setPreviewAnswers((prev) => ({ ...prev, [qId]: val }));
+    setPreviewFieldErrors((prev) => {
+      const next = { ...prev };
+      delete next[qId];
+      return next;
+    });
+  };
+
+  const togglePreviewMulti = (qId, option) => {
+    setPreviewAnswers((prev) => {
+      const current = prev[qId] || [];
+      if (current.includes(option)) {
+        return { ...prev, [qId]: current.filter((v) => v !== option) };
+      }
+      return { ...prev, [qId]: [...current, option] };
+    });
+    setPreviewFieldErrors((prev) => {
+      const next = { ...prev };
+      delete next[qId];
+      return next;
+    });
+  };
+
+  const validatePreviewPage = (pvQuestions) => {
+    const errors = {};
+    for (const q of pvQuestions) {
+      if (q.type === "text_block") continue;
+      if (q.required) {
+        const val = previewAnswers[q.id];
+        if (!val || (typeof val === "string" && !val.trim()) || (Array.isArray(val) && val.length === 0)) {
+          errors[q.id] = "Pertanyaan ini wajib dijawab.";
+        }
+      }
+    }
+    setPreviewFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const enterPreview = () => {
+    setPreviewMode(true);
+    setPreviewAnswers({});
+    setPreviewPage(0);
+    setPreviewFieldErrors({});
+  };
+
+  const exitPreview = () => {
+    setPreviewMode(false);
+    setPreviewAnswers({});
+    setPreviewPage(0);
+    setPreviewFieldErrors({});
+  };
+
   if (loading) {
     return (
       <section className="page">
@@ -515,6 +632,178 @@ export default function FormDetail() {
           >
             &larr; Kembali ke daftar form
           </Link>
+        </div>
+      </section>
+    );
+  }
+
+  /* ── Preview mode render ── */
+  if (previewMode) {
+    const pvPages = getPreviewPages();
+    const pvTotal = pvPages.length;
+    const pvQuestions = pvPages[previewPage] || [];
+
+    return (
+      <section className="page">
+        {/* Preview banner */}
+        <div className="preview-banner">
+          <div className="preview-banner-inner">
+            <span className="preview-banner-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            </span>
+            <span>Mode Pratinjau — tampilan ini menunjukkan bagaimana responden melihat formulir Anda</span>
+            <button type="button" className="preview-banner-close" onClick={exitPreview}>
+              Keluar Pratinjau
+            </button>
+          </div>
+        </div>
+
+        <div className="respond-container">
+          {/* Header */}
+          <div className="respond-header-card">
+            <h1 className="respond-title">{form.title}</h1>
+            {form.description && (
+              <p className="respond-description">{form.description}</p>
+            )}
+            {pvTotal > 1 && (
+              <div className="respond-progress">
+                <div className="respond-progress-bar">
+                  <div
+                    className="respond-progress-fill"
+                    style={{ width: `${((previewPage + 1) / pvTotal) * 100}%` }}
+                  />
+                </div>
+                <span className="respond-progress-text">
+                  Halaman {previewPage + 1} dari {pvTotal}
+                </span>
+              </div>
+            )}
+            <p className="respond-required-note"><span className="required-mark">*</span> Menandakan pertanyaan wajib diisi</p>
+          </div>
+
+          {/* Questions */}
+          {pvQuestions.map((q) => {
+            if (q.type === "text_block") {
+              return (
+                <div key={q.id} className="respond-text-block-card">
+                  <p className="text-block-text">{q.title}</p>
+                </div>
+              );
+            }
+
+            return (
+              <div key={q.id} className={`respond-question-card ${previewFieldErrors[q.id] ? "respond-question-card-error" : ""}`}>
+                <p className="respond-question-title">
+                  {q.title}
+                  {q.required && <span className="required-mark">*</span>}
+                </p>
+
+                {q.type === "short_answer" && (
+                  <input
+                    type="text"
+                    className="field-input"
+                    placeholder="Jawaban Anda"
+                    value={previewAnswers[q.id] || ""}
+                    onChange={(e) => setPreviewAnswer(q.id, e.target.value)}
+                  />
+                )}
+
+                {q.type === "long_answer" && (
+                  <textarea
+                    className="field-input field-textarea"
+                    placeholder="Jawaban Anda"
+                    rows={4}
+                    value={previewAnswers[q.id] || ""}
+                    onChange={(e) => setPreviewAnswer(q.id, e.target.value)}
+                  />
+                )}
+
+                {q.type === "multiple_choice" && !q.allowMultiple && (
+                  <div className="respond-options">
+                    {(q.options || []).map((opt, i) => (
+                      <label key={i} className="respond-radio-option">
+                        <input
+                          type="radio"
+                          name={`pv-${q.id}`}
+                          checked={previewAnswers[q.id] === opt}
+                          onChange={() => setPreviewAnswer(q.id, opt)}
+                        />
+                        <span>{opt}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+
+                {q.type === "multiple_choice" && q.allowMultiple && (
+                  <div className="respond-options">
+                    {(q.options || []).map((opt, i) => (
+                      <label key={i} className="respond-checkbox-option">
+                        <input
+                          type="checkbox"
+                          checked={(previewAnswers[q.id] || []).includes(opt)}
+                          onChange={() => togglePreviewMulti(q.id, opt)}
+                        />
+                        <span>{opt}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+
+                {q.type === "multiple_choice_dropdown" && (
+                  <select
+                    className="field-input respond-select"
+                    value={previewAnswers[q.id] || ""}
+                    onChange={(e) => setPreviewAnswer(q.id, e.target.value)}
+                  >
+                    <option value="">Pilih opsi</option>
+                    {(q.options || []).map((opt, i) => (
+                      <option key={i} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                )}
+
+                {q.type === "linear_scale" && (
+                  <LinearScaleInput
+                    value={previewAnswers[q.id] || ""}
+                    onChange={(val) => setPreviewAnswer(q.id, val)}
+                    labelMin={q.labelMin}
+                    labelMax={q.labelMax}
+                  />
+                )}
+
+                {q.type === "star_rating" && (
+                  <StarRatingInput
+                    value={Number(previewAnswers[q.id]) || 0}
+                    onChange={(val) => setPreviewAnswer(q.id, String(val))}
+                  />
+                )}
+
+                {previewFieldErrors[q.id] && (
+                  <span className="field-error">{previewFieldErrors[q.id]}</span>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Navigation */}
+          <div className="respond-nav-buttons">
+            {previewPage > 0 && (
+              <Button variant="ghost" onClick={() => { setPreviewPage((p) => p - 1); setPreviewFieldErrors({}); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+                Sebelumnya
+              </Button>
+            )}
+            <div style={{ flex: 1 }} />
+            {previewPage < pvTotal - 1 ? (
+              <Button onClick={() => { if (!validatePreviewPage(pvQuestions)) return; setPreviewPage((p) => p + 1); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+                Selanjutnya
+              </Button>
+            ) : (
+              <Button disabled>Kirim</Button>
+            )}
+          </div>
         </div>
       </section>
     );
@@ -612,6 +901,9 @@ export default function FormDetail() {
                 Edit form
               </Button>
             )}
+            <Button variant="ghost" onClick={enterPreview} disabled={saving || questions.length === 0}>
+              Pratinjau
+            </Button>
             <Button variant="danger" onClick={() => setDeleteModal(true)} disabled={saving}>
               Hapus
             </Button>
@@ -742,8 +1034,8 @@ export default function FormDetail() {
         </div>
       ) : null}
 
-      {/* Inline add question form */}
-      {showAddQuestion && !editingQuestion && form.status === "draft" && (
+      {/* Inline add question form (only at bottom when not inserting between) */}
+      {showAddQuestion && insertAfterIndex === null && !editingQuestion && form.status === "draft" && (
         <AddQuestion
           onCancel={() => {
             setShowAddQuestion(false);

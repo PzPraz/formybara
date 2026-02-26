@@ -6,6 +6,8 @@ import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
 import FormList from './pages/FormList.jsx'
 import FormDetail from './pages/FormDetail.jsx'
+import RespondForm from './pages/RespondForm.jsx'
+import SubmitSuccess from './pages/SubmitSuccess.jsx'
 import { getToken } from './lib/api.js'
 
 // Protected Route Component
@@ -46,6 +48,8 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/respond/:id" element={<RespondForm />} />
+            <Route path="/respond/:id/success" element={<SubmitSuccess />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
