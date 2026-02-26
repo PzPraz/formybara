@@ -33,7 +33,14 @@ import {
 } from "../lib/api.js";
 
 /* ── Sortable wrapper for each question card ── */
-function SortableQuestionCard({ question, saving, onDelete, onEdit, isDraft, children }) {
+function SortableQuestionCard({
+  question,
+  saving,
+  onDelete,
+  onEdit,
+  isDraft,
+  children,
+}) {
   const {
     attributes,
     listeners,
@@ -112,10 +119,7 @@ function StarRatingPreview() {
   const [hovered, setHovered] = useState(0);
 
   return (
-    <div
-      className="star-rating-preview"
-      onMouseLeave={() => setHovered(0)}
-    >
+    <div className="star-rating-preview" onMouseLeave={() => setHovered(0)}>
       {[1, 2, 3, 4, 5].map((n) => (
         <div key={n} className="star-item">
           <span className="star-number">{n}</span>
@@ -269,9 +273,7 @@ function QuestionContent({ question }) {
         </div>
       )}
 
-      {question.type === "star_rating" && (
-        <StarRatingPreview />
-      )}
+      {question.type === "star_rating" && <StarRatingPreview />}
     </>
   );
 }
@@ -293,7 +295,12 @@ export default function FormDetail() {
   const [insertAfterIndex, setInsertAfterIndex] = useState(null);
   const [insertMenuIndex, setInsertMenuIndex] = useState(null);
   const [formError, setFormError] = useState("");
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", variant: "default", undoData: null });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    variant: "default",
+    undoData: null,
+  });
   const [deleteModal, setDeleteModal] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
   const [previewAnswers, setPreviewAnswers] = useState({});
@@ -377,7 +384,12 @@ export default function FormDetail() {
       });
       setForm(updated);
       setEditing(false);
-      setSnackbar({ open: true, message: "Form berhasil diperbarui.", variant: "success", undoData: null });
+      setSnackbar({
+        open: true,
+        message: "Form berhasil diperbarui.",
+        variant: "success",
+        undoData: null,
+      });
     } catch (err) {
       setFormError(err.message);
     } finally {
@@ -392,7 +404,12 @@ export default function FormDetail() {
       await deleteForm(id);
       navigate("/forms");
     } catch (err) {
-      setSnackbar({ open: true, message: err.message, variant: "error", undoData: null });
+      setSnackbar({
+        open: true,
+        message: err.message,
+        variant: "error",
+        undoData: null,
+      });
     } finally {
       setSaving(false);
     }
@@ -401,7 +418,8 @@ export default function FormDetail() {
   const handleAddQuestion = async (questionData) => {
     try {
       setSaving(true);
-      const insertAt = insertAfterIndex !== null ? insertAfterIndex + 1 : questions.length;
+      const insertAt =
+        insertAfterIndex !== null ? insertAfterIndex + 1 : questions.length;
       const newQuestion = await createQuestion(id, {
         ...questionData,
         order: insertAt,
@@ -417,8 +435,13 @@ export default function FormDetail() {
         setQuestions(updated);
         // Reorder on server
         try {
-          await reorderQuestions(id, updated.map((q) => q.id));
-        } catch (_) { /* best effort */ }
+          await reorderQuestions(
+            id,
+            updated.map((q) => q.id),
+          );
+        } catch (_) {
+          /* best effort */
+        }
       } else {
         setQuestions((prev) => [...prev, newQuestion]);
       }
@@ -428,7 +451,12 @@ export default function FormDetail() {
       setInsertAfterIndex(null);
       setInsertMenuIndex(null);
     } catch (err) {
-      setSnackbar({ open: true, message: err.message, variant: "error", undoData: null });
+      setSnackbar({
+        open: true,
+        message: err.message,
+        variant: "error",
+        undoData: null,
+      });
     } finally {
       setSaving(false);
     }
@@ -453,8 +481,15 @@ export default function FormDetail() {
       });
     } catch (err) {
       // Restore on failure
-      setQuestions((prev) => [...prev, deletedQuestion].sort((a, b) => a.order - b.order));
-      setSnackbar({ open: true, message: err.message, variant: "error", undoData: null });
+      setQuestions((prev) =>
+        [...prev, deletedQuestion].sort((a, b) => a.order - b.order),
+      );
+      setSnackbar({
+        open: true,
+        message: err.message,
+        variant: "error",
+        undoData: null,
+      });
     } finally {
       setSaving(false);
     }
@@ -475,10 +510,22 @@ export default function FormDetail() {
         labelMin: q.labelMin || undefined,
         labelMax: q.labelMax || undefined,
       });
-      setQuestions((prev) => [...prev, restored].sort((a, b) => a.order - b.order));
-      setSnackbar({ open: false, message: "", variant: "default", undoData: null });
+      setQuestions((prev) =>
+        [...prev, restored].sort((a, b) => a.order - b.order),
+      );
+      setSnackbar({
+        open: false,
+        message: "",
+        variant: "default",
+        undoData: null,
+      });
     } catch (err) {
-      setSnackbar({ open: true, message: "Gagal membatalkan penghapusan.", variant: "error", undoData: null });
+      setSnackbar({
+        open: true,
+        message: "Gagal membatalkan penghapusan.",
+        variant: "error",
+        undoData: null,
+      });
     } finally {
       setSaving(false);
     }
@@ -499,11 +546,16 @@ export default function FormDetail() {
         order: editingQuestion.order,
       });
       setQuestions((prev) =>
-        prev.map((q) => (q.id === editingQuestion.id ? updated : q))
+        prev.map((q) => (q.id === editingQuestion.id ? updated : q)),
       );
       setEditingQuestion(null);
     } catch (err) {
-      setSnackbar({ open: true, message: err.message, variant: "error", undoData: null });
+      setSnackbar({
+        open: true,
+        message: err.message,
+        variant: "error",
+        undoData: null,
+      });
     } finally {
       setSaving(false);
     }
@@ -524,7 +576,12 @@ export default function FormDetail() {
         reordered.map((q) => q.id),
       );
     } catch (err) {
-      setSnackbar({ open: true, message: "Gagal menyimpan urutan.", variant: "error", undoData: null });
+      setSnackbar({
+        open: true,
+        message: "Gagal menyimpan urutan.",
+        variant: "error",
+        undoData: null,
+      });
       console.log(err);
       setQuestions(questions);
     }
@@ -589,7 +646,11 @@ export default function FormDetail() {
       if (q.type === "text_block") continue;
       if (q.required) {
         const val = previewAnswers[q.id];
-        if (!val || (typeof val === "string" && !val.trim()) || (Array.isArray(val) && val.length === 0)) {
+        if (
+          !val ||
+          (typeof val === "string" && !val.trim()) ||
+          (Array.isArray(val) && val.length === 0)
+        ) {
           errors[q.id] = "Pertanyaan ini wajib dijawab.";
         }
       }
@@ -649,13 +710,29 @@ export default function FormDetail() {
         <div className="preview-banner">
           <div className="preview-banner-inner">
             <span className="preview-banner-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                 <circle cx="12" cy="12" r="3" />
               </svg>
             </span>
-            <span>Mode Pratinjau — tampilan ini menunjukkan bagaimana responden melihat formulir Anda</span>
-            <button type="button" className="preview-banner-close" onClick={exitPreview}>
+            <span>
+              Mode Pratinjau — tampilan ini menunjukkan bagaimana responden
+              melihat formulir Anda
+            </span>
+            <button
+              type="button"
+              className="preview-banner-close"
+              onClick={exitPreview}
+            >
               Keluar Pratinjau
             </button>
           </div>
@@ -681,7 +758,10 @@ export default function FormDetail() {
                 </span>
               </div>
             )}
-            <p className="respond-required-note"><span className="required-mark">*</span> Menandakan pertanyaan wajib diisi</p>
+            <p className="respond-required-note">
+              <span className="required-mark">*</span> Menandakan pertanyaan
+              wajib diisi
+            </p>
           </div>
 
           {/* Questions */}
@@ -695,7 +775,10 @@ export default function FormDetail() {
             }
 
             return (
-              <div key={q.id} className={`respond-question-card ${previewFieldErrors[q.id] ? "respond-question-card-error" : ""}`}>
+              <div
+                key={q.id}
+                className={`respond-question-card ${previewFieldErrors[q.id] ? "respond-question-card-error" : ""}`}
+              >
                 <p className="respond-question-title">
                   {q.title}
                   {q.required && <span className="required-mark">*</span>}
@@ -760,7 +843,9 @@ export default function FormDetail() {
                   >
                     <option value="">Pilih opsi</option>
                     {(q.options || []).map((opt, i) => (
-                      <option key={i} value={opt}>{opt}</option>
+                      <option key={i} value={opt}>
+                        {opt}
+                      </option>
                     ))}
                   </select>
                 )}
@@ -782,7 +867,9 @@ export default function FormDetail() {
                 )}
 
                 {previewFieldErrors[q.id] && (
-                  <span className="field-error">{previewFieldErrors[q.id]}</span>
+                  <span className="field-error">
+                    {previewFieldErrors[q.id]}
+                  </span>
                 )}
               </div>
             );
@@ -791,13 +878,26 @@ export default function FormDetail() {
           {/* Navigation */}
           <div className="respond-nav-buttons">
             {previewPage > 0 && (
-              <Button variant="ghost" onClick={() => { setPreviewPage((p) => p - 1); setPreviewFieldErrors({}); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setPreviewPage((p) => p - 1);
+                  setPreviewFieldErrors({});
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+              >
                 Sebelumnya
               </Button>
             )}
             <div style={{ flex: 1 }} />
             {previewPage < pvTotal - 1 ? (
-              <Button onClick={() => { if (!validatePreviewPage(pvQuestions)) return; setPreviewPage((p) => p + 1); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+              <Button
+                onClick={() => {
+                  if (!validatePreviewPage(pvQuestions)) return;
+                  setPreviewPage((p) => p + 1);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+              >
                 Selanjutnya
               </Button>
             ) : (
@@ -818,41 +918,31 @@ export default function FormDetail() {
           {editing ? (
             <form onSubmit={handleSave}>
               <div className="stack">
-                <Input
-                  placeholder="Judul form"
-                  value={draft.title}
-                  onChange={(e) =>
-                    setDraft((prev) => ({ ...prev, title: e.target.value }))
-                  }
-                />
-                <Input
-                  placeholder="Deskripsi form (opsional)"
-                  value={draft.description}
-                  onChange={(e) =>
-                    setDraft((prev) => ({
-                      ...prev,
-                      description: e.target.value,
-                    }))
-                  }
-                />
                 <label className="field">
-                  <span className="field-label">Status</span>
-                  <select
-                    className="field-input"
-                    value={draft.status}
+                  <span className="field-label">Title</span>
+                  <Input
+                    placeholder="Judul form"
+                    value={draft.title}
                     onChange={(e) =>
-                      setDraft((prev) => ({ ...prev, status: e.target.value }))
+                      setDraft((prev) => ({ ...prev, title: e.target.value }))
                     }
-                  >
-                    <option value="draft">Draft</option>
-                    <option value="published">Published</option>
-                    <option value="archived">Archived</option>
-                  </select>
+                  />
+                </label>
+                <label className="field">
+                  <span className="field-label">Description</span>
+                  <Input
+                    placeholder="Deskripsi form (opsional)"
+                    value={draft.description}
+                    onChange={(e) =>
+                      setDraft((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
+                    }
+                  />
                 </label>
                 {formError ? (
-                  <p className="form-status error">
-                    {formError}
-                  </p>
+                  <p className="form-status error">{formError}</p>
                 ) : null}
                 <div className="action-row">
                   <Button type="submit" disabled={saving}>
@@ -901,44 +991,55 @@ export default function FormDetail() {
                 Edit form
               </Button>
             )}
-            <Button variant="ghost" onClick={enterPreview} disabled={saving || questions.length === 0}>
+            <Button
+              variant="ghost"
+              onClick={enterPreview}
+              disabled={saving || questions.length === 0}
+            >
               Pratinjau
             </Button>
-            <Button variant="danger" onClick={() => setDeleteModal(true)} disabled={saving}>
+            <Button
+              variant="danger"
+              onClick={() => setDeleteModal(true)}
+              disabled={saving}
+            >
               Hapus
             </Button>
           </div>
           {form.status === "draft" && (
             <div className="add-menu-wrapper">
-              <Button onClick={() => setShowAddMenu((v) => !v)} disabled={saving}>
+              <Button
+                onClick={() => setShowAddMenu((v) => !v)}
+                disabled={saving}
+              >
                 + Tambah Item
               </Button>
               {showAddMenu && (
                 <div className="add-menu-dropdown">
-                <button
-                  type="button"
-                  className="add-menu-item"
-                  onClick={() => openAddMenu("question")}
-                >
-                  Pertanyaan
-                </button>
-                <button
-                  type="button"
-                  className="add-menu-item"
-                  onClick={() => openAddMenu("text_block")}
-                >
-                  Blok Teks
-                </button>
-                <button
-                  type="button"
-                  className="add-menu-item"
-                  onClick={() => openAddMenu("page_break")}
-                >
-                  Page Break
-                </button>
-              </div>
-            )}
-          </div>
+                  <button
+                    type="button"
+                    className="add-menu-item"
+                    onClick={() => openAddMenu("question")}
+                  >
+                    Pertanyaan
+                  </button>
+                  <button
+                    type="button"
+                    className="add-menu-item"
+                    onClick={() => openAddMenu("text_block")}
+                  >
+                    Blok Teks
+                  </button>
+                  <button
+                    type="button"
+                    className="add-menu-item"
+                    onClick={() => openAddMenu("page_break")}
+                  >
+                    Page Break
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
       )}
@@ -978,19 +1079,24 @@ export default function FormDetail() {
                   )}
 
                   {/* Inline insert: show AddQuestion form after this card */}
-                  {showAddQuestion && insertAfterIndex === idx && !editingQuestion && form.status === "draft" && (
-                    <div style={{ marginTop: "0.5rem" }}>
-                      <AddQuestion
-                        onCancel={() => {
-                          setShowAddQuestion(false);
-                          setAddType(null);
-                          setInsertAfterIndex(null);
-                        }}
-                        onSubmit={handleAddQuestion}
-                        initialType={addType === "question" ? "short_answer" : addType}
-                      />
-                    </div>
-                  )}
+                  {showAddQuestion &&
+                    insertAfterIndex === idx &&
+                    !editingQuestion &&
+                    form.status === "draft" && (
+                      <div style={{ marginTop: "0.5rem" }}>
+                        <AddQuestion
+                          onCancel={() => {
+                            setShowAddQuestion(false);
+                            setAddType(null);
+                            setInsertAfterIndex(null);
+                          }}
+                          onSubmit={handleAddQuestion}
+                          initialType={
+                            addType === "question" ? "short_answer" : addType
+                          }
+                        />
+                      </div>
+                    )}
 
                   {/* Insert button between cards */}
                   {form.status === "draft" && !editingQuestion && (
@@ -1000,7 +1106,11 @@ export default function FormDetail() {
                         <button
                           type="button"
                           className="insert-between-btn"
-                          onClick={() => setInsertMenuIndex(insertMenuIndex === idx ? null : idx)}
+                          onClick={() =>
+                            setInsertMenuIndex(
+                              insertMenuIndex === idx ? null : idx,
+                            )
+                          }
                           disabled={saving}
                           aria-label="Sisipkan item"
                         >
@@ -1008,9 +1118,27 @@ export default function FormDetail() {
                         </button>
                         {insertMenuIndex === idx && (
                           <div className="add-menu-dropdown insert-menu-dropdown">
-                            <button type="button" className="add-menu-item" onClick={() => openInsertMenu(idx, "question")}>Pertanyaan</button>
-                            <button type="button" className="add-menu-item" onClick={() => openInsertMenu(idx, "text_block")}>Blok Teks</button>
-                            <button type="button" className="add-menu-item" onClick={() => openInsertMenu(idx, "page_break")}>Page Break</button>
+                            <button
+                              type="button"
+                              className="add-menu-item"
+                              onClick={() => openInsertMenu(idx, "question")}
+                            >
+                              Pertanyaan
+                            </button>
+                            <button
+                              type="button"
+                              className="add-menu-item"
+                              onClick={() => openInsertMenu(idx, "text_block")}
+                            >
+                              Blok Teks
+                            </button>
+                            <button
+                              type="button"
+                              className="add-menu-item"
+                              onClick={() => openInsertMenu(idx, "page_break")}
+                            >
+                              Page Break
+                            </button>
                           </div>
                         )}
                       </div>
@@ -1035,16 +1163,19 @@ export default function FormDetail() {
       ) : null}
 
       {/* Inline add question form (only at bottom when not inserting between) */}
-      {showAddQuestion && insertAfterIndex === null && !editingQuestion && form.status === "draft" && (
-        <AddQuestion
-          onCancel={() => {
-            setShowAddQuestion(false);
-            setAddType(null);
-          }}
-          onSubmit={handleAddQuestion}
-          initialType={addType === "question" ? "short_answer" : addType}
-        />
-      )}
+      {showAddQuestion &&
+        insertAfterIndex === null &&
+        !editingQuestion &&
+        form.status === "draft" && (
+          <AddQuestion
+            onCancel={() => {
+              setShowAddQuestion(false);
+              setAddType(null);
+            }}
+            onSubmit={handleAddQuestion}
+            initialType={addType === "question" ? "short_answer" : addType}
+          />
+        )}
 
       {/* Snackbar for notifications */}
       <Snackbar
@@ -1053,7 +1184,14 @@ export default function FormDetail() {
         variant={snackbar.variant}
         actionLabel={snackbar.undoData ? "Undo" : undefined}
         onAction={handleUndoDelete}
-        onClose={() => setSnackbar({ open: false, message: "", variant: "default", undoData: null })}
+        onClose={() =>
+          setSnackbar({
+            open: false,
+            message: "",
+            variant: "default",
+            undoData: null,
+          })
+        }
         duration={5000}
       />
 

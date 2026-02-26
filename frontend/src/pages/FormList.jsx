@@ -142,21 +142,6 @@ export default function FormList() {
                 }
                 disabled={creating}
               />
-              <label className="field">
-                <span className="field-label">Status</span>
-                <select
-                  className="field-input"
-                  value={draft.status}
-                  onChange={(event) =>
-                    setDraft((prev) => ({ ...prev, status: event.target.value }))
-                  }
-                  disabled={creating}
-                >
-                  <option value="draft">Draft</option>
-                  <option value="published">Published</option>
-                  <option value="archived">Archived</option>
-                </select>
-              </label>
               {status.message ? (
                 <p className={`form-status ${status.type}`}>{status.message}</p>
               ) : null}
