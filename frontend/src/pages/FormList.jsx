@@ -14,6 +14,9 @@ export default function FormList() {
   const [showCreate, setShowCreate] = useState(false)
   const [status, setStatus] = useState({ type: '', message: '' })
   const [titleError, setTitleError] = useState('')
+  const [search, setSearch] = useState('')
+  const [filterStatus, setFilterStatus] = useState('all')
+  const [sortOrder, setSortOrder] = useState('newest')
   const [draft, setDraft] = useState({
     title: '',
     description: '',
@@ -84,6 +87,19 @@ export default function FormList() {
     if (!value) return 'Draft'
     return value.charAt(0).toUpperCase() + value.slice(1)
   }
+
+  // Filtered and sorted forms
+  const filteredForms = forms
+    .filter((f) => {
+      if (filterStatus !== 'all' && (f.status || 'draft') !== filterStatus) return false
+      if (search.trim() && !f.title.toLowerCase().includes(search.trim().toLowerCase())) return false
+      return true
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.updatedAt || 0).getTime()
+      const dateB = new Date(b.updatedAt || 0).getTime()
+      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB
+    })
 
   return (
     <section className="page">
@@ -176,8 +192,45 @@ export default function FormList() {
         </div>
       )}
 
+      {/* Filter / Sort bar */}
+      {!loading && forms.length > 0 && (
+        <div className="filter-bar">
+          <input
+            type="text"
+            className="field-input filter-search"
+            placeholder="Cari judul form..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <select
+            className="field-input filter-select"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+          >
+            <option value="all">Semua Status</option>
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+            <option value="archived">Archived</option>
+          </select>
+          <select
+            className="field-input filter-select"
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+          >
+            <option value="newest">Terbaru</option>
+            <option value="oldest">Terlama</option>
+          </select>
+        </div>
+      )}
+
+      {!loading && forms.length > 0 && filteredForms.length === 0 && (
+        <div className="card" style={{ textAlign: 'center', padding: '2rem 1.5rem' }}>
+          <p className="subtext">Tidak ada form yang cocok dengan filter.</p>
+        </div>
+      )}
+
       <div className="grid">
-        {forms.map((form) => (
+        {filteredForms.map((form) => (
           <Link key={form.id} to={`/forms/${form.id}`} className="card form">
             <div className="form-top">
               <span className={`pill pill-${(form.status || 'draft').toLowerCase()}`}>
