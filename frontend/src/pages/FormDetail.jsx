@@ -1333,7 +1333,7 @@ export default function FormDetail() {
           <h4 className="sidebar-card-title">Info</h4>
           <div className="sidebar-info-row">
             <span className="sidebar-info-label">Response</span>
-            <span>{questions.filter((q) => q.type !== "page_break" && q.type !== "text_block").length}</span>
+            <span>{form.responseCount ?? 0}</span>
           </div>
           <div className="sidebar-info-row">
             <span className="sidebar-info-label">Diperbarui</span>

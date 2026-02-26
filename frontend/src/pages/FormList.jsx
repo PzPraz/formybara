@@ -226,7 +226,7 @@ export default function FormList() {
             <h3>{form.title}</h3>
             <p className="subtext">{form.description || 'Tanpa deskripsi'}</p>
             <div className="form-footer">
-              <span>Response: {form.questions?.length || 0}</span>
+              <span>Response: {form.responseCount ?? 0}</span>
             </div>
           </Link>
         ))}

@@ -28,10 +28,17 @@ export async function GET(req: NextRequest) {
         status: true,
         createdAt: true,
         updatedAt: true,
+        _count: { select: { responses: true } },
       },
     });
 
-    return NextResponse.json(forms, { status: 200, headers: corsHeaders });
+    const result = forms.map((f) => ({
+      ...f,
+      responseCount: f._count.responses,
+      _count: undefined,
+    }));
+
+    return NextResponse.json(result, { status: 200, headers: corsHeaders });
   } catch {
     return NextResponse.json(
       { message: "Unexpected error." },
