@@ -96,6 +96,7 @@ export async function PATCH(
       "text_block",
       "linear_scale",
       "star_rating",
+      "date_picker"
     ];
     if (!validTypes.includes(body.type)) {
       return NextResponse.json(
@@ -112,6 +113,7 @@ export async function PATCH(
       "text_block",
       "linear_scale",
       "star_rating",
+      "date_picker"
     ];
 
     // Validate options for multiple choice questions

@@ -59,6 +59,7 @@ export async function POST(
       "text_block",
       "linear_scale",
       "star_rating",
+      "date_picker"
     ];
 
     if (!validTypes.includes(type)) {
