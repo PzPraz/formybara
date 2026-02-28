@@ -1,12 +1,14 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import Button from '../components/Button.jsx'
 import Input from '../components/Input.jsx'
 import Spinner from '../components/Spinner.jsx'
+import Snackbar from '../components/Snackbar.jsx'
 import { createForm, getForms } from '../lib/api.js'
 import { validateTitle } from '../lib/validation.js'
 
 export default function FormList() {
+  const location = useLocation()
   const [forms, setForms] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -17,6 +19,7 @@ export default function FormList() {
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [sortOrder, setSortOrder] = useState('newest')
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', variant: 'default' })
   const [draft, setDraft] = useState({
     title: '',
     description: '',
@@ -39,6 +42,15 @@ export default function FormList() {
   useEffect(() => {
     fetchForms()
   }, [])
+
+  // Show snackbar from navigation state (e.g. after deleting a form)
+  useEffect(() => {
+    if (location.state?.snackbar) {
+      setSnackbar({ open: true, ...location.state.snackbar })
+      // Clear the state so it doesn't re-trigger on refresh
+      window.history.replaceState({}, '')
+    }
+  }, [location.state])
 
   const handleCreate = async (event) => {
     event.preventDefault()
@@ -172,6 +184,7 @@ export default function FormList() {
 
       {!loading && forms.length === 0 && !error && (
         <div className="card" style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
+          <img src="/empty.png" alt="empty" style={{ maxWidth: '280px', marginBottom: '1rem' }} />
           <p style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>Belum ada form</p>
           <p className="subtext">Klik "+ Form baru" untuk membuat form pertama kamu.</p>
         </div>
@@ -231,6 +244,13 @@ export default function FormList() {
           </Link>
         ))}
       </div>
+
+      <Snackbar
+        open={snackbar.open}
+        message={snackbar.message}
+        variant={snackbar.variant}
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+      />
     </section>
   )
 }

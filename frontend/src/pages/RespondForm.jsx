@@ -191,6 +191,7 @@ export default function RespondForm() {
     return (
       <div className="respond-container">
         <div className="respond-error-card">
+          <img src="/permission-denied.png" alt="permission denied" style={{ maxWidth: '280px', marginBottom: '1rem' }} />
           <h2>Formulir Tidak Tersedia</h2>
           <p>{error}</p>
         </div>
@@ -294,6 +295,21 @@ export default function RespondForm() {
                     <span>{opt}</span>
                   </label>
                 ))}
+              </div>
+            )}
+
+            {q.type === "date_picker" && (
+              <div className="question-options">
+                <div className="date-input-wrapper">
+                  <input 
+                    type="date"
+                    className="field-input date-preview"
+                    style={{
+                      backgroundColor: "#f9fafb",
+                    }}
+                    onChange={(e) => setAnswer(q.id, e.target.value)}
+                  />
+                </div>
               </div>
             )}
 

@@ -11,7 +11,13 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
+  const { id } = await params;6
+
+  const userId = getAuthUserId(_req);
+  if (!userId) {
+    return NextResponse.json({ message: "Unauthorized." }, { status: 401, headers: corsHeaders });
+  }
+
   const form = await prisma.form.findUnique({
     where: { id },
     select: {
@@ -31,6 +37,10 @@ export async function GET(
       { message: "Form not found." },
       { status: 404, headers: corsHeaders }
     );
+  }
+
+  if (form.ownerId !== userId) {
+    return NextResponse.json({ message: "Forbidden." }, { status: 403, headers: corsHeaders });
   }
 
   return NextResponse.json(
@@ -150,7 +160,7 @@ export async function DELETE(
     }
 
     await prisma.form.delete({ where: { id } });
-    return new NextResponse(null, { status: 204, headers: corsHeaders });
+    return NextResponse.json({ message: "Delete successfull", status: 200, headers: corsHeaders });
   } catch {
     return NextResponse.json(
       { message: "Unexpected error." },

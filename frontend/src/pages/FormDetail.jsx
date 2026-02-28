@@ -30,6 +30,7 @@ import {
   updateQuestion,
   deleteQuestion,
   reorderQuestions,
+  ApiError,
 } from "../lib/api.js";
 
 /* ── Sortable wrapper for each question card ── */
@@ -108,7 +109,11 @@ function SortableQuestionCard({
                 aria-label="Hapus"
                 title={hasResponses ? "Tidak dapat menghapus pertanyaan karena form sudah memiliki respons" : "Hapus"}
               >
-                x
+              <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M5.12817 8.15391C5.12817 10.4103 5.12817 13.5898 5.12817 15.1283C5.23074 16.4616 5.3333 18.2052 5.43587 19.436C5.53843 20.8719 6.7692 22.0001 8.2051 22.0001H15.7948C17.2307 22.0001 18.4615 20.8719 18.5641 19.436C18.6666 18.2052 18.7692 16.4616 18.8718 15.1283C18.9743 13.5898 18.8718 10.4103 18.8718 8.15391H5.12817Z" fill="#030D45"/>
+              <path d="M19.1795 5.07698H16.6154L15.7949 3.53852C15.2821 2.61545 14.359 2.00006 13.3333 2.00006H10.8718C9.84615 2.00006 8.82051 2.61545 8.41026 3.53852L7.38462 5.07698H4.82051C4.41026 5.07698 4 5.48724 4 5.8975C4 6.30775 4.41026 6.71801 4.82051 6.71801H19.1795C19.5897 6.71801 20 6.41032 20 5.8975C20 5.38468 19.5897 5.07698 19.1795 5.07698ZM9.12821 5.07698L9.64103 4.25647C9.84615 3.84621 10.2564 3.53852 10.7692 3.53852H13.2308C13.7436 3.53852 14.1538 3.74365 14.359 4.25647L14.8718 5.07698H9.12821Z" fill="#030D45"/>
+              </svg>
+              
               </button>
             </div>
           )}
@@ -260,6 +265,21 @@ function QuestionContent({ question }) {
           </div>
         )}
 
+      {question.type === "date_picker" && (
+        <div className="question-options">
+          <div className="date-input-wrapper">
+            <input 
+              type="date"
+              className="field-input date-preview"
+              style={{
+                backgroundColor: "#f9fafb",
+                color: "#6b7280"
+              }}
+            />
+          </div>
+        </div>
+      )}
+
       {question.type === "linear_scale" && (
         <div className="linear-scale-preview">
           <div className="rating-preview">
@@ -291,6 +311,7 @@ export default function FormDetail() {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [errorType, setErrorType] = useState(null); // 'not-found' | 'forbidden' | 'generic'
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showAddQuestion, setShowAddQuestion] = useState(false);
@@ -338,6 +359,7 @@ export default function FormDetail() {
         status: data.status || "draft",
       });
       setError("");
+      setErrorType(null);
 
       try {
         const questionsData = await getQuestions(id);
@@ -348,6 +370,13 @@ export default function FormDetail() {
       }
     } catch (err) {
       setError(err.message);
+      if (err instanceof ApiError) {
+        if (err.status === 404) setErrorType('not-found');
+        else if (err.status === 403) setErrorType('forbidden');
+        else setErrorType('generic');
+      } else {
+        setErrorType('generic');
+      }
     } finally {
       setLoading(false);
     }
@@ -410,7 +439,7 @@ export default function FormDetail() {
     try {
       setSaving(true);
       await deleteForm(id);
-      navigate("/forms");
+      navigate("/forms", { state: { snackbar: { message: "Form berhasil dihapus.", variant: "success" } } });
     } catch (err) {
       setSnackbar({
         open: true,
@@ -719,10 +748,34 @@ export default function FormDetail() {
   }
 
   if (!form || error) {
+    const errorConfig = {
+      'not-found': {
+        img: '/not-found.png',
+        alt: 'Not found',
+        title: 'Form tidak ditemukan',
+        subtitle: 'Form yang Anda cari tidak ada atau sudah dihapus.',
+      },
+      'forbidden': {
+        img: '/permission-denied.png',
+        alt: 'Forbidden',
+        title: 'Akses ditolak',
+        subtitle: 'Anda tidak memiliki akses untuk melihat form ini.',
+      },
+      'generic': {
+        img: '/404.png',
+        alt: 'Error',
+        title: 'Terjadi kesalahan',
+        subtitle: error || 'Mohon coba lagi nanti.',
+      },
+    };
+    const cfg = errorConfig[errorType] || errorConfig['not-found'];
+
     return (
       <section className="page">
         <div className="card" style={{ textAlign: "center", padding: "3rem" }}>
-          <h3>{error || "Form not found"}</h3>
+          <img src={cfg.img} alt={cfg.alt} style={{ maxWidth: '280px', marginBottom: '1rem' }} />
+          <h3>{cfg.title}</h3>
+          <p className="subtext" style={{ marginTop: '0.5rem' }}>{cfg.subtitle}</p>
           <Link
             to="/forms"
             className="link"
@@ -869,6 +922,21 @@ export default function FormDetail() {
                         <span>{opt}</span>
                       </label>
                     ))}
+                  </div>
+                )}
+
+                {q.type === "date_picker" && (
+                  <div className="question-options">
+                    <div className="date-input-wrapper">
+                      <input 
+                        type="date"
+                        className="field-input date-preview"
+                        style={{
+                          backgroundColor: "#f9fafb",
+                          color: "#6b7280"
+                        }}
+                      />
+                    </div>
                   </div>
                 )}
 
@@ -1269,7 +1337,7 @@ export default function FormDetail() {
                 Publikasi
               </button>
             )}
-            {form.status === "published" && !hasResponses && (
+            {form.status === "closed" && !hasResponses && (
               <button
                   type="button"
                   className="sidebar-btn sidebar-btn-draft"
@@ -1305,7 +1373,7 @@ export default function FormDetail() {
           </div>
         </div>
 
-        {(form.status === "published" || form.status === "closed") && (
+        {(form.status === "published") && (
           <div className="sidebar-card">
             <h4 className="sidebar-card-title">Bagikan</h4>
             <p className="sidebar-share-desc">Kirim link ini kepada responden untuk mengisi formulir.</p>

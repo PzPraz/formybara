@@ -15,9 +15,11 @@ export default function Navbar() {
     <nav className="nav">
       <div className="nav-inner">
         <Link to="/" className="nav-brand">
-          <div className="nav-icon">F</div>
+          <div className="nav-icon">
+            <img src="/logo.png" alt="" />
+          </div>
           <div>
-            <div className="nav-logo">Form Builder</div>
+            <div className="nav-logo">Formybara</div>
           </div>
         </Link>
 

@@ -24,6 +24,15 @@ async function fetchWithTimeout(url, options = {}, timeout = 10000) {
   }
 }
 
+// Custom error class that preserves HTTP status code
+export class ApiError extends Error {
+  constructor(message, status) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+  }
+}
+
 // Helper function to parse error response
 async function handleErrorResponse(response) {
   let errorMessage = 'Terjadi kesalahan. Mohon coba lagi.';
@@ -48,7 +57,7 @@ async function handleErrorResponse(response) {
     errorMessage = 'Terjadi kesalahan server. Mohon coba lagi.';
   }
   
-  throw new Error(errorMessage);
+  throw new ApiError(errorMessage, response.status);
 }
 
 export async function registerUser({ name, email, password }) {

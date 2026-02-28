@@ -12,6 +12,7 @@ export default function Home() {
           Buat dan kelola formulir online dengan mudah, mirip seperti Google Forms.
           Kumpulkan data, buat survei, dan analisis hasil dengan tampilan yang modern.
         </p>
+        <img src="/cta.png" alt="Form Builder" className="hero-img" />
         <div className="action-row" style={{ marginTop: '1.5rem' }}>
           {isAuthenticated ? (
             <Link to="/forms">
@@ -21,9 +22,6 @@ export default function Home() {
             <>
               <Link to="/register">
                 <button className="btn btn-primary">Mulai Sekarang</button>
-              </Link>
-              <Link to="/login">
-                <button className="btn btn-ghost">Login</button>
               </Link>
             </>
           )}

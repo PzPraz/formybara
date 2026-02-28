@@ -30,7 +30,7 @@ function StarRatingFormPreview() {
 
 const TYPES_WITH_OPTIONS = ["multiple_choice", "multiple_choice_dropdown"];
 const TYPES_WITHOUT_REQUIRED = ["page_break", "text_block"];
-const TYPES_WITHOUT_OPTIONS = ["short_answer", "long_answer", "page_break", "text_block", "linear_scale", "star_rating"];
+const TYPES_WITHOUT_OPTIONS = ["short_answer", "long_answer", "page_break", "text_block", "linear_scale", "star_rating", "date_picker"];
 
 export default function AddQuestion({
   onCancel,
@@ -139,6 +139,7 @@ export default function AddQuestion({
     text_block: "Blok Teks",
     linear_scale: "Skala Linier",
     star_rating: "Rating Bintang",
+    date_picker: "Pemilih Tanggal",
   }[questionData.type] || "Pertanyaan Baru";
 
 
@@ -161,16 +162,6 @@ export default function AddQuestion({
       <div className="question-card-body">
         <div className="question-card-header-row">
           <h4>{typeLabel}</h4>
-          {onCancel && (
-            <button
-              type="button"
-              className="btn-delete-question"
-              onClick={onCancel}
-              aria-label="Tutup"
-            >
-              x
-            </button>
-          )}
         </div>
 
         <form onSubmit={handleSubmit} className="stack">
@@ -283,6 +274,16 @@ export default function AddQuestion({
                   <button
                     type="button"
                     className={`question-type-btn ${
+                      questionData.type === "date_picker" ? "active" : ""
+                    }`}
+                    onClick={() => handleTypeChange("date_picker")}
+                    disabled={disableTypeChange}
+                  >
+                    Tanggal
+                  </button>
+                  <button
+                    type="button"
+                    className={`question-type-btn ${
                       questionData.type === "linear_scale" ? "active" : ""
                     }`}
                     onClick={() => handleTypeChange("linear_scale")}
@@ -386,6 +387,27 @@ export default function AddQuestion({
                 style={{ backgroundColor: "#f5f5f5", cursor: "not-allowed" }}
               />
             </div>
+          )}
+
+          {questionData.type === "date_picker" && (
+          <div className="field">
+            <label className="field-label">Preview</label>
+            <div className="date-picker-preview">
+              <input 
+                type="date"
+                className="field-input"
+                disabled
+                style={{
+                  backgroundColor: "#f5f5f5",
+                  cursor: "not-allowed",
+                  color: "#999"
+                }}
+              />
+              <p className="field-hint" style={{ marginTop: "0.5rem", fontSize: "0.8rem" }}>
+                Responden akan melihat pemilih tanggal standar browser.
+              </p>
+            </div>
+          </div>
           )}
 
           {questionData.type === "linear_scale" && (
