@@ -144,11 +144,17 @@ export function clearToken() {
   localStorage.removeItem("token");
 }
 
-export async function getForms() {
+export async function getForms({ search = '', status = '', sort = '' } = {}) {
   const token = getToken();
   if (!token) throw new Error("Sesi telah berakhir. Silakan login kembali.");
 
-  const response = await fetchWithTimeout(`${API_BASE}/forms`, {
+  const params = new URLSearchParams();
+  if (search) params.set('search', search);
+  if (status && status !== 'all') params.set('status', status);
+  if (sort) params.set('sort', sort);
+  const qs = params.toString();
+
+  const response = await fetchWithTimeout(`${API_BASE}/forms${qs ? `?${qs}` : ''}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

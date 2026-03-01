@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import Button from '../../components/ui/Button.jsx'
 import Input from '../../components/ui/Input.jsx'
 import Spinner from '../../components/ui/Spinner.jsx'
@@ -19,6 +19,7 @@ export default function FormList() {
   const [status, setStatus] = useState({ type: '', message: '' })
   const [titleError, setTitleError] = useState('')
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [sortOrder, setSortOrder] = useState('newest')
   const [snackbar, setSnackbar] = useState({ open: false, message: '', variant: 'default' })
@@ -34,7 +35,7 @@ export default function FormList() {
   const fetchForms = async () => {
     try {
       setLoading(true)
-      const data = await getForms()
+      const data = await getForms({ search: debouncedSearch, status: filterStatus, sort: sortOrder })
       setForms(Array.isArray(data) ? data : [])
       setError('')
     } catch (err) {
@@ -44,9 +45,15 @@ export default function FormList() {
     }
   }
 
+  // Debounce search input (400ms)
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 400)
+    return () => clearTimeout(timer)
+  }, [search])
+
   useEffect(() => {
     fetchForms()
-  }, [])
+  }, [debouncedSearch, filterStatus, sortOrder])
 
   useEffect(() => {
     if (location.state?.snackbar) {
@@ -137,18 +144,8 @@ export default function FormList() {
     return value.charAt(0).toUpperCase() + value.slice(1)
   }
 
-  // Filtered and sorted forms
+  // Forms are already filtered and sorted by the backend
   const filteredForms = forms
-    .filter((f) => {
-      if (filterStatus !== 'all' && (f.status || 'draft') !== filterStatus) return false
-      if (search.trim() && !f.title.toLowerCase().includes(search.trim().toLowerCase())) return false
-      return true
-    })
-    .sort((a, b) => {
-      const dateA = new Date(a.updatedAt || 0).getTime()
-      const dateB = new Date(b.updatedAt || 0).getTime()
-      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB
-    })
 
   return (
     <section className="page">

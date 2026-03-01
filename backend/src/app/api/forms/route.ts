@@ -18,9 +18,29 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    const { searchParams } = new URL(req.url);
+    const search = searchParams.get("search")?.trim() || "";
+    const status = searchParams.get("status") || "";
+    const sort = searchParams.get("sort") || "newest";
+
+    const where: Record<string, unknown> = { ownerId: user.userId };
+
+    if (search) {
+      where.title = { contains: search, mode: "insensitive" };
+    }
+
+    if (status === "draft" || status === "published" || status === "closed") {
+      where.status = status;
+    }
+
+    // Build orderBy
+    const orderBy = sort === "oldest"
+      ? { updatedAt: "asc" as const }
+      : { updatedAt: "desc" as const };
+
     const forms = await prisma.form.findMany({
-      where: { ownerId: user.userId },
-      orderBy: { updatedAt: "desc" },
+      where,
+      orderBy,
       select: {
         id: true,
         title: true,

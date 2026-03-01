@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 /* ── Interactive inputs for preview mode ── */
 export function StarRatingInput({ value, onChange }) {
   const [hovered, setHovered] = useState(0);
