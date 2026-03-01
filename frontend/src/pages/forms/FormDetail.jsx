@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import {
   DndContext,
@@ -74,6 +74,29 @@ export default function FormDetail() {
     description: "",
     status: "draft",
   });
+  // Auto-save status: 'idle' | 'saving' | 'saved' | 'error'
+  const [saveStatus, setSaveStatus] = useState('idle');
+  const saveStatusTimer = useRef(null);
+
+  const markSaving = useCallback(() => {
+    clearTimeout(saveStatusTimer.current);
+    setSaveStatus('saving');
+  }, []);
+
+  const markSaved = useCallback(() => {
+    setSaveStatus('saved');
+    clearTimeout(saveStatusTimer.current);
+    saveStatusTimer.current = setTimeout(() => setSaveStatus('idle'), 3000);
+  }, []);
+
+  const markSaveError = useCallback(() => {
+    setSaveStatus('error');
+    clearTimeout(saveStatusTimer.current);
+    saveStatusTimer.current = setTimeout(() => setSaveStatus('idle'), 4000);
+  }, []);
+
+  // Cleanup timer on unmount
+  useEffect(() => () => clearTimeout(saveStatusTimer.current), []);
 
   const isDraft = form?.status === "draft";
   const hasResponses = form?.responseCount > 0;
@@ -170,6 +193,7 @@ export default function FormDetail() {
 
     try {
       setSaving(true);
+      markSaving();
       const updated = await updateForm(id, {
         title: draft.title.trim(),
         description: draft.description.trim() || null,
@@ -177,6 +201,7 @@ export default function FormDetail() {
       });
       setForm(updated);
       setEditing(false);
+      markSaved();
       setSnackbar({
         open: true,
         message: "Form berhasil diperbarui.",
@@ -185,6 +210,7 @@ export default function FormDetail() {
       });
     } catch (err) {
       setFormError(err.message);
+      markSaveError();
     } finally {
       setSaving(false);
     }
@@ -211,6 +237,7 @@ export default function FormDetail() {
   const handleAddQuestion = async (questionData) => {
     try {
       setSaving(true);
+      markSaving();
       const insertAt =
         insertAfterIndex !== null ? insertAfterIndex + 1 : questions.length;
       const newQuestion = await createQuestion(id, {
@@ -242,7 +269,9 @@ export default function FormDetail() {
       setAddType(null);
       setInsertAfterIndex(null);
       setInsertMenuIndex(null);
+      markSaved();
     } catch (err) {
+      markSaveError();
       setSnackbar({
         open: true,
         message: err.message,
@@ -264,7 +293,9 @@ export default function FormDetail() {
     // Delete on server
     try {
       setSaving(true);
+      markSaving();
       await deleteQuestion(id, questionId);
+      markSaved();
       setSnackbar({
         open: true,
         message: "Item berhasil dihapus.",
@@ -273,6 +304,7 @@ export default function FormDetail() {
       });
     } catch (err) {
       // Restore on failure
+      markSaveError();
       setQuestions((prev) =>
         [...prev, deletedQuestion].sort((a, b) => a.order - b.order),
       );
@@ -292,6 +324,7 @@ export default function FormDetail() {
     if (!q) return;
     try {
       setSaving(true);
+      markSaving();
       const restored = await createQuestion(id, {
         type: q.type,
         title: q.title,
@@ -305,6 +338,7 @@ export default function FormDetail() {
       setQuestions((prev) =>
         [...prev, restored].sort((a, b) => a.order - b.order),
       );
+      markSaved();
       setSnackbar({
         open: false,
         message: "",
@@ -312,6 +346,7 @@ export default function FormDetail() {
         undoData: null,
       });
     } catch (err) {
+      markSaveError();
       setSnackbar({
         open: true,
         message: "Gagal membatalkan penghapusan.",
@@ -333,6 +368,7 @@ export default function FormDetail() {
     if (!editingQuestion) return;
     try {
       setSaving(true);
+      markSaving();
       const updated = await updateQuestion(id, editingQuestion.id, {
         ...questionData,
         order: editingQuestion.order,
@@ -341,7 +377,9 @@ export default function FormDetail() {
         prev.map((q) => (q.id === editingQuestion.id ? updated : q)),
       );
       setEditingQuestion(null);
+      markSaved();
     } catch (err) {
+      markSaveError();
       setSnackbar({
         open: true,
         message: err.message,
@@ -363,11 +401,14 @@ export default function FormDetail() {
     setQuestions(reordered);
 
     try {
+      markSaving();
       await reorderQuestions(
         id,
         reordered.map((q) => q.id),
       );
+      markSaved();
     } catch (err) {
+      markSaveError();
       setSnackbar({
         open: true,
         message: "Gagal menyimpan urutan.",
@@ -469,9 +510,11 @@ export default function FormDetail() {
   const handleStatusChange = async (newStatus) => {
     try {
       setSaving(true);
+      markSaving();
       const updated = await updateForm(id, { status: newStatus });
       setForm(updated);
       setDraft((prev) => ({ ...prev, status: newStatus }));
+      markSaved();
       setSnackbar({
         open: true,
         message: newStatus === "published" ? "Form berhasil dipublikasi." : newStatus === "closed" ? "Form berhasil ditutup." : "Form dikembalikan ke draft.",
@@ -479,6 +522,7 @@ export default function FormDetail() {
         undoData: null,
       });
     } catch (err) {
+      markSaveError();
       setSnackbar({ open: true, message: err.message, variant: "error", undoData: null });
     } finally {
       setSaving(false);
@@ -879,7 +923,7 @@ export default function FormDetail() {
             alignItems: "center",
           }}
         >
-          <div className="action-row">
+          <div className="action-row" style={{ alignItems: "center" }}>
             {form.status === "draft" && (
               <Button variant="ghost" onClick={() => setEditing(true)}>
                 Edit form
@@ -900,6 +944,31 @@ export default function FormDetail() {
               Hapus
             </Button>
           </div>
+
+          {/* Auto-save indicator */}
+          {saveStatus !== 'idle' && (
+            <div className={`autosave-indicator autosave-${saveStatus}`}>
+              {saveStatus === 'saving' && (
+                <>
+                  <span className="autosave-spinner" />
+                  <span>Menyimpan...</span>
+                </>
+              )}
+              {saveStatus === 'saved' && (
+                <>
+                  <svg className="autosave-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span>Tersimpan</span>
+                </>
+              )}
+              {saveStatus === 'error' && (
+                <>
+                  <svg className="autosave-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                  <span>Gagal menyimpan</span>
+                </>
+              )}
+            </div>
+          )}
+
           {form.status === "draft" && !showAddQuestion && !hasResponses && (
             <div className="add-menu-wrapper">
               <Button
