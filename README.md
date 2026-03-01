@@ -18,7 +18,7 @@ Aplikasi Form Builder seperti Google Forms. Full-stack web app dengan fitur aute
 - Halaman Login & Register dengan validasi input
 - Dashboard Form List dengan search, filter status, sort tanggal
 - Form Detail: edit metadata, kelola pertanyaan, preview, share link
-- 9 tipe pertanyaan: Short Answer, Long Answer, Multiple Choice, Dropdown, Date Picker, Linear Scale, Star Rating, Page Break, Text Block
+- 11 tipe pertanyaan: Short Answer, Long Answer, Multiple Choice, Dropdown, Date Picker, Linear Scale, Star Rating, Page Break, Text Block, Email, Number Box
 - Drag-and-drop reorder pertanyaan (@dnd-kit)
 - Multi-page form (page break) dengan progress bar
 - Response statistics: Bar Chart, Star Chart, Linear Scale Chart, Text List
