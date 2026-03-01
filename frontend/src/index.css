@@ -655,6 +655,50 @@ p {
   min-width: 140px;
 }
 
+/* ─── Forms stat ─── */
+.form-stat{
+  display: flex;
+  gap: 1.5rem;
+}
+
+.form-stat-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  min-width: 140px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.form-total-count {
+  background-color: #fff3e0;
+  border: 1px solid #ffcc80;
+  color: #e65100;
+}
+
+.form-active-count {
+  background-color: #e8f5e9;
+  border: 1px solid #a5d6a7;
+  color: #2e7d32;
+}
+
+.form-draft-count {
+  background-color: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  color: #616161;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
 /* ─── Form List Grid ─── */
 
 .grid {

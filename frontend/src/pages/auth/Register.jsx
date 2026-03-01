@@ -125,10 +125,6 @@ export default function Register() {
               </span>
             ) : 'Daftar'}
           </Button>
-          <div className="divider">atau</div>
-          <Button variant="ghost" type="button" disabled={loading}>
-            Register with Google (mock)
-          </Button>
         </form>
       </div>
       <p className="subtext" style={{ textAlign: 'center' }}>

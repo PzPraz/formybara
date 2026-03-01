@@ -109,10 +109,6 @@ export default function Login() {
               </span>
             ) : 'Login'}
           </Button>
-          <div className="divider">atau</div>
-          <Button variant="ghost" type="button" disabled={loading}>
-            Login with Google (mock)
-          </Button>
         </form>
       </div>
       <p className="subtext" style={{ textAlign: 'center' }}>
