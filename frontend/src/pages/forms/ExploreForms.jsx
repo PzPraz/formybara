@@ -94,7 +94,6 @@ export default function ExploreForms() {
         {forms.map((form) => (
           <Link key={form.id} to={`/respond/${form.id}`} className="card form explore-card">
             <div className="form-top">
-              <span className="pill pill-published">Aktif</span>
               <span className="meta">{formatDate(form.updatedAt)}</span>
             </div>
             <h3>{form.title}</h3>

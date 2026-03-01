@@ -1,0 +1,535 @@
+{
+  "info": {
+    "name": "Formybara API",
+    "description": "API documentation untuk Formybara — Form Builder. Base URL: https://formybara-api.vercel.app atau http://localhost:3001",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://formybara-api.vercel.app/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "formId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "questionId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"test@example.com\",\n  \"password\": \"test1234\"\n}"
+            },
+            "description": "Register user baru.\n\n**Validasi:**\n- `name`: wajib, min 1 karakter\n- `email`: wajib, format email valid, harus unik\n- `password`: wajib, min 8 karakter, harus mengandung huruf dan angka"
+          },
+          "response": [
+            {
+              "name": "201 - Success",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"user\": {\n    \"id\": \"507f1f77bcf86cd799439011\",\n    \"email\": \"test@example.com\",\n    \"name\": \"Test User\"\n  }\n}"
+            },
+            {
+              "name": "400 - Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Password harus minimal 8 karakter dan mengandung huruf serta angka.\"\n}"
+            },
+            {
+              "name": "409 - Email Exists",
+              "status": "Conflict",
+              "code": 409,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Email sudah terdaftar.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('token', jsonData.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alice@demo.com\",\n  \"password\": \"alice123\"\n}"
+            },
+            "description": "Login dengan email dan password. Mengembalikan JWT token (berlaku 7 hari).\n\n**Akun demo:**\n- alice@demo.com / alice123\n- budi@demo.com / budi1234\n- citra@demo.com / citra123"
+          },
+          "response": [
+            {
+              "name": "200 - Success",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"user\": {\n    \"id\": \"507f1f77bcf86cd799439011\",\n    \"email\": \"alice@demo.com\",\n    \"name\": \"Alice Wijaya\"\n  }\n}"
+            },
+            {
+              "name": "401 - Invalid Credentials",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Email atau password salah.\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Forms",
+      "item": [
+        {
+          "name": "List Forms",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/forms?search=&status=&sort=newest",
+              "host": ["{{baseUrl}}"],
+              "path": ["forms"],
+              "query": [
+                { "key": "search", "value": "", "description": "Cari berdasarkan judul (case-insensitive)" },
+                { "key": "status", "value": "", "description": "Filter status: draft | published | closed | (kosong = semua)" },
+                { "key": "sort", "value": "newest", "description": "Urutan: newest | oldest (default: newest)" }
+              ]
+            },
+            "description": "List semua form milik user yang terautentikasi.\n\n**Query Parameters:**\n- `search` — filter judul form (case-insensitive, contains)\n- `status` — filter berdasarkan status: `draft`, `published`, `closed`\n- `sort` — urutan berdasarkan updatedAt: `newest` (default) atau `oldest`"
+          },
+          "response": [
+            {
+              "name": "200 - Success",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "[\n  {\n    \"id\": \"507f1f77bcf86cd799439011\",\n    \"title\": \"Survei Kepuasan Mahasiswa 2026\",\n    \"description\": \"Survei tahunan...\",\n    \"status\": \"published\",\n    \"createdAt\": \"2026-02-25T10:00:00.000Z\",\n    \"updatedAt\": \"2026-02-28T15:30:00.000Z\",\n    \"responseCount\": 10\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Create Form",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) {",
+                  "    pm.collectionVariables.set('formId', jsonData.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/forms", "host": ["{{baseUrl}}"], "path": ["forms"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Form Baru\",\n  \"description\": \"Deskripsi form\",\n  \"status\": \"draft\"\n}"
+            },
+            "description": "Buat form baru.\n\n**Body:**\n- `title` (string, wajib): min 1 karakter, max 255\n- `description` (string, opsional)\n- `status` (string, opsional): `draft` (default), `published`, `closed`"
+          },
+          "response": [
+            {
+              "name": "201 - Created",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": \"507f1f77bcf86cd799439012\",\n  \"title\": \"Form Baru\",\n  \"description\": \"Deskripsi form\",\n  \"status\": \"draft\",\n  \"ownerId\": \"507f1f77bcf86cd799439011\",\n  \"createdAt\": \"2026-03-01T10:00:00.000Z\",\n  \"updatedAt\": \"2026-03-01T10:00:00.000Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Form Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/forms/{{formId}}", "host": ["{{baseUrl}}"], "path": ["forms", "{{formId}}"] },
+            "description": "Ambil detail form berdasarkan ID. Hanya pemilik form yang bisa mengakses."
+          },
+          "response": [
+            {
+              "name": "200 - Success",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": \"507f1f77bcf86cd799439012\",\n  \"title\": \"Form Baru\",\n  \"description\": \"Deskripsi form\",\n  \"status\": \"draft\",\n  \"ownerId\": \"507f1f77bcf86cd799439011\",\n  \"createdAt\": \"2026-03-01T10:00:00.000Z\",\n  \"updatedAt\": \"2026-03-01T10:00:00.000Z\",\n  \"responseCount\": 0\n}"
+            },
+            {
+              "name": "400 - Invalid ID",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Invalid form ID.\"\n}"
+            },
+            {
+              "name": "404 - Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Form not found.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Form",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/forms/{{formId}}", "host": ["{{baseUrl}}"], "path": ["forms", "{{formId}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Form Updated\",\n  \"description\": \"Deskripsi baru\",\n  \"status\": \"published\"\n}"
+            },
+            "description": "Update form (title, description, dan/atau status).\n\n**Constraint:** Form yang sudah punya response tidak bisa dikembalikan ke status `draft`.\n\n**Body (semua opsional):**\n- `title` (string)\n- `description` (string)\n- `status`: `draft`, `published`, `closed`"
+          },
+          "response": [
+            {
+              "name": "200 - Updated",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": \"507f1f77bcf86cd799439012\",\n  \"title\": \"Form Updated\",\n  \"description\": \"Deskripsi baru\",\n  \"status\": \"published\",\n  \"ownerId\": \"507f1f77bcf86cd799439011\",\n  \"createdAt\": \"2026-03-01T10:00:00.000Z\",\n  \"updatedAt\": \"2026-03-01T12:00:00.000Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Form",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/forms/{{formId}}", "host": ["{{baseUrl}}"], "path": ["forms", "{{formId}}"] },
+            "description": "Hapus form beserta semua pertanyaan dan response terkait."
+          },
+          "response": [
+            {
+              "name": "200 - Deleted",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Form deleted.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Published Form (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/forms/{{formId}}/public", "host": ["{{baseUrl}}"], "path": ["forms", "{{formId}}", "public"] },
+            "description": "Ambil form yang statusnya `published` beserta semua pertanyaan. Tidak memerlukan autentikasi. Digunakan oleh respondent untuk mengisi form."
+          },
+          "response": [
+            {
+              "name": "200 - Success",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": \"507f1f77bcf86cd799439012\",\n  \"title\": \"Survei Kepuasan\",\n  \"description\": \"...\",\n  \"status\": \"published\",\n  \"questions\": [\n    {\n      \"id\": \"507f1f77bcf86cd799439020\",\n      \"type\": \"short_answer\",\n      \"title\": \"Nama lengkap\",\n      \"required\": true,\n      \"order\": 1,\n      \"options\": [],\n      \"allowMultiple\": false,\n      \"labelMin\": null,\n      \"labelMax\": null\n    }\n  ]\n}"
+            },
+            {
+              "name": "403 - Not Published",
+              "status": "Forbidden",
+              "code": 403,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"This form is not accepting responses.\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Questions",
+      "item": [
+        {
+          "name": "List Questions",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/forms/{{formId}}/questions", "host": ["{{baseUrl}}"], "path": ["forms", "{{formId}}", "questions"] },
+            "description": "List semua pertanyaan dari sebuah form, diurutkan berdasarkan field `order`."
+          },
+          "response": [
+            {
+              "name": "200 - Success",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "[\n  {\n    \"id\": \"507f1f77bcf86cd799439020\",\n    \"formId\": \"507f1f77bcf86cd799439012\",\n    \"type\": \"short_answer\",\n    \"title\": \"Nama lengkap\",\n    \"required\": true,\n    \"order\": 1,\n    \"options\": [],\n    \"allowMultiple\": false,\n    \"labelMin\": null,\n    \"labelMax\": null\n  },\n  {\n    \"id\": \"507f1f77bcf86cd799439021\",\n    \"formId\": \"507f1f77bcf86cd799439012\",\n    \"type\": \"multiple_choice\",\n    \"title\": \"Fakultas\",\n    \"required\": true,\n    \"order\": 2,\n    \"options\": [\"FASILKOM\", \"FEB\", \"FH\"],\n    \"allowMultiple\": false,\n    \"labelMin\": null,\n    \"labelMax\": null\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Create Question",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) {",
+                  "    pm.collectionVariables.set('questionId', jsonData.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/forms/{{formId}}/questions", "host": ["{{baseUrl}}"], "path": ["forms", "{{formId}}", "questions"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"multiple_choice\",\n  \"title\": \"Pilih fakultas Anda\",\n  \"required\": true,\n  \"options\": [\"FASILKOM\", \"FEB\", \"FH\", \"FK\"],\n  \"allowMultiple\": false\n}"
+            },
+            "description": "Tambah pertanyaan ke form.\n\n**Constraint:** Tidak bisa menambah pertanyaan jika form sudah memiliki response.\n\n**Body:**\n- `type` (wajib): `short_answer`, `long_answer`, `multiple_choice`, `multiple_choice_dropdown`, `date_picker`, `linear_scale`, `star_rating`, `page_break`, `text_block`\n- `title` (wajib): teks pertanyaan\n- `required` (boolean, default: false)\n- `options` (string[]): untuk multiple_choice dan dropdown\n- `allowMultiple` (boolean): untuk multiple_choice (checkbox)\n- `labelMin`, `labelMax` (string): untuk linear_scale"
+          },
+          "response": [
+            {
+              "name": "201 - Created",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": \"507f1f77bcf86cd799439022\",\n  \"formId\": \"507f1f77bcf86cd799439012\",\n  \"type\": \"multiple_choice\",\n  \"title\": \"Pilih fakultas Anda\",\n  \"required\": true,\n  \"order\": 3,\n  \"options\": [\"FASILKOM\", \"FEB\", \"FH\", \"FK\"],\n  \"allowMultiple\": false,\n  \"labelMin\": null,\n  \"labelMax\": null\n}"
+            },
+            {
+              "name": "400 - Has Responses",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Cannot modify questions: form already has responses.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Question",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/forms/{{formId}}/questions/{{questionId}}", "host": ["{{baseUrl}}"], "path": ["forms", "{{formId}}", "questions", "{{questionId}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Pilih fakultas Anda (updated)\",\n  \"required\": false\n}"
+            },
+            "description": "Update pertanyaan.\n\n**Constraint:** Tidak bisa update jika form sudah memiliki response.\n\n**Body (semua opsional):**\n- `type`, `title`, `required`, `options`, `allowMultiple`, `labelMin`, `labelMax`"
+          },
+          "response": [
+            {
+              "name": "200 - Updated",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": \"507f1f77bcf86cd799439022\",\n  \"formId\": \"507f1f77bcf86cd799439012\",\n  \"type\": \"multiple_choice\",\n  \"title\": \"Pilih fakultas Anda (updated)\",\n  \"required\": false,\n  \"order\": 3,\n  \"options\": [\"FASILKOM\", \"FEB\", \"FH\", \"FK\"],\n  \"allowMultiple\": false\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Question",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/forms/{{formId}}/questions/{{questionId}}", "host": ["{{baseUrl}}"], "path": ["forms", "{{formId}}", "questions", "{{questionId}}"] },
+            "description": "Hapus pertanyaan dari form.\n\n**Constraint:** Tidak bisa delete jika form sudah memiliki response."
+          },
+          "response": [
+            {
+              "name": "200 - Deleted",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Question deleted.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reorder Questions",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/forms/{{formId}}/questions/reorder", "host": ["{{baseUrl}}"], "path": ["forms", "{{formId}}", "questions", "reorder"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderedIds\": [\n    \"507f1f77bcf86cd799439021\",\n    \"507f1f77bcf86cd799439020\",\n    \"507f1f77bcf86cd799439022\"\n  ]\n}"
+            },
+            "description": "Ubah urutan pertanyaan (drag & drop reorder).\n\n**Constraint:** Tidak bisa reorder jika form sudah memiliki response.\n\n**Body:**\n- `orderedIds` (string[]): array ID pertanyaan dalam urutan baru"
+          },
+          "response": [
+            {
+              "name": "200 - Success",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Questions reordered.\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Responses",
+      "item": [
+        {
+          "name": "Submit Response (Public)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/forms/{{formId}}/responses", "host": ["{{baseUrl}}"], "path": ["forms", "{{formId}}", "responses"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"respondentName\": \"Andi Pratama\",\n  \"answers\": [\n    {\n      \"questionId\": \"507f1f77bcf86cd799439020\",\n      \"value\": \"Andi Pratama\"\n    },\n    {\n      \"questionId\": \"507f1f77bcf86cd799439021\",\n      \"value\": \"FASILKOM\"\n    },\n    {\n      \"questionId\": \"507f1f77bcf86cd799439022\",\n      \"values\": [\"Figma\", \"Canva\"]\n    }\n  ]\n}"
+            },
+            "description": "Submit response untuk form yang published. Tidak memerlukan autentikasi.\n\n**Constraint:** Form harus berstatus `published`.\n\n**Body:**\n- `respondentName` (string, opsional)\n- `answers` (array):\n  - `questionId` (string, wajib)\n  - `value` (string): untuk jawaban single value\n  - `values` (string[]): untuk jawaban multiple (checkbox)"
+          },
+          "response": [
+            {
+              "name": "201 - Submitted",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": \"507f1f77bcf86cd799439030\",\n  \"formId\": \"507f1f77bcf86cd799439012\",\n  \"respondentName\": \"Andi Pratama\",\n  \"submittedAt\": \"2026-03-01T10:00:00.000Z\",\n  \"answers\": [\n    {\n      \"id\": \"507f1f77bcf86cd799439031\",\n      \"questionId\": \"507f1f77bcf86cd799439020\",\n      \"value\": \"Andi Pratama\",\n      \"values\": []\n    }\n  ]\n}"
+            },
+            {
+              "name": "403 - Not Published",
+              "status": "Forbidden",
+              "code": 403,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"This form is not accepting responses.\"\n}"
+            },
+            {
+              "name": "400 - Missing Required",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Missing required answer for: Nama lengkap\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Responses (Owner Only)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/forms/{{formId}}/responses", "host": ["{{baseUrl}}"], "path": ["forms", "{{formId}}", "responses"] },
+            "description": "List semua response dari sebuah form, hanya bisa diakses oleh pemilik form. Termasuk semua jawaban per response."
+          },
+          "response": [
+            {
+              "name": "200 - Success",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "[\n  {\n    \"id\": \"507f1f77bcf86cd799439030\",\n    \"formId\": \"507f1f77bcf86cd799439012\",\n    \"respondentName\": \"Andi Pratama\",\n    \"submittedAt\": \"2026-03-01T10:00:00.000Z\",\n    \"answers\": [\n      {\n        \"id\": \"507f1f77bcf86cd799439031\",\n        \"questionId\": \"507f1f77bcf86cd799439020\",\n        \"value\": \"Andi Pratama\",\n        \"values\": []\n      },\n      {\n        \"id\": \"507f1f77bcf86cd799439032\",\n        \"questionId\": \"507f1f77bcf86cd799439021\",\n        \"value\": \"FASILKOM\",\n        \"values\": []\n      }\n    ]\n  }\n]"
+            },
+            {
+              "name": "403 - Not Owner",
+              "status": "Forbidden",
+              "code": 403,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Forbidden.\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Explore",
+      "item": [
+        {
+          "name": "List Published Forms (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/explore?search=&sort=newest",
+              "host": ["{{baseUrl}}"],
+              "path": ["explore"],
+              "query": [
+                { "key": "search", "value": "", "description": "Cari judul form (case-insensitive)" },
+                { "key": "sort", "value": "newest", "description": "Urutan: newest | oldest" }
+              ]
+            },
+            "description": "List semua form yang berstatus `published`. Tidak memerlukan autentikasi. Menampilkan nama pembuat, jumlah pertanyaan, dan jumlah response."
+          },
+          "response": [
+            {
+              "name": "200 - Success",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "[\n  {\n    \"id\": \"507f1f77bcf86cd799439012\",\n    \"title\": \"Survei Kepuasan Mahasiswa 2026\",\n    \"description\": \"Survei tahunan...\",\n    \"status\": \"published\",\n    \"createdAt\": \"2026-02-25T10:00:00.000Z\",\n    \"updatedAt\": \"2026-02-28T15:30:00.000Z\",\n    \"ownerName\": \"Alice Wijaya\",\n    \"questionCount\": 6,\n    \"responseCount\": 10\n  }\n]"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

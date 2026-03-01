@@ -91,6 +91,9 @@ npm run dev
 
 ## API Endpoints
 
+> **Postman Collection** tersedia di [`backend/Formybara.postman_collection.json`](backend/Formybara.postman_collection.json).
+> Import ke Postman untuk mencoba semua endpoint lengkap dengan example request/response.
+
 | Method | Endpoint | Auth | Deskripsi |
 |--------|----------|------|-----------|
 | POST | `/api/auth/register` | - | Register user baru |
@@ -121,3 +124,13 @@ npm run dev
 | Variable | Deskripsi |
 |----------|-----------|
 | `VITE_API_URL` | Base URL backend (default: `http://localhost:3001`) |
+
+## Akun Demo
+
+Untuk mencoba aplikasi tanpa register, gunakan akun demo berikut:
+
+| Email | Password | Keterangan |
+|-------|----------|------------|
+| alice@demo.com | alice123 | 3 forms (2 published, 1 draft), masing-masing sudah ada 10 response |
+| budi@demo.com | budi1234 | 3 forms (2 published, 1 closed), masing-masing sudah ada 10 response |
+| citra@demo.com | citra123 | 2 forms (2 published), masing-masing sudah ada 10 response |

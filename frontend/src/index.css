@@ -140,6 +140,8 @@ p {
 .nav-links {
   display: flex;
   gap: 0.25rem;
+  align-items: center;
+  justify-content: center;
   font-weight: 500;
   font-size: 0.875rem;
 }
@@ -2376,6 +2378,12 @@ p {
 .explore-card {
   position: relative;
   transition: transform 0.15s ease, box-shadow 0.2s ease;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.explore-card .explore-meta {
+  margin-top: auto;
 }
 
 .explore-card:hover {
