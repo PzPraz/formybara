@@ -40,10 +40,9 @@ export async function POST(req: NextRequest) {
       { token, user },
       { status: 201, headers: corsHeaders }
     );
-  } catch (error) {
-    console.error("Register error:", error);
+  } catch {
     return NextResponse.json(
-      { message: "Unexpected error.", detail: error instanceof Error ? error.message : String(error) },
+      { message: "Unexpected error." },
       { status: 500, headers: corsHeaders }
     );
   }

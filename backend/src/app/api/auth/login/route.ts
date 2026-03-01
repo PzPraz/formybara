@@ -44,10 +44,9 @@ export async function POST(req: NextRequest) {
       },
       { status: 200, headers: corsHeaders }
     );
-  } catch (error) {
-    console.error("Login error:", error);
+  } catch {
     return NextResponse.json(
-      { message: "Unexpected error.", detail: error instanceof Error ? error.message : String(error) },
+      { message: "Unexpected error." },
       { status: 500, headers: corsHeaders }
     );
   }

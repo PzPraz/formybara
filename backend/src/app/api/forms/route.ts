@@ -39,10 +39,9 @@ export async function GET(req: NextRequest) {
     }));
 
     return NextResponse.json(result, { status: 200, headers: corsHeaders });
-  } catch (error) {
-    console.error("Forms GET error:", error);
+  } catch {
     return NextResponse.json(
-      { message: "Unexpected error.", detail: error instanceof Error ? error.message : String(error) },
+      { message: "Unexpected error." },
       { status: 500, headers: corsHeaders }
     );
   }
@@ -92,10 +91,9 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(form, { status: 201, headers: corsHeaders });
-  } catch (error) {
-    console.error("Forms POST error:", error);
+  } catch {
     return NextResponse.json(
-      { message: "Unexpected error.", detail: error instanceof Error ? error.message : String(error) },
+      { message: "Unexpected error." },
       { status: 500, headers: corsHeaders }
     );
   }

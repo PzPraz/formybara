@@ -118,10 +118,9 @@ export async function PATCH(
       { ...form, responseCount: form._count.responses, _count: undefined },
       { headers: corsHeaders },
     );
-  } catch (error) {
-    console.error("Form PATCH error:", error);
+  } catch {
     return NextResponse.json(
-      { message: "Unexpected error.", detail: error instanceof Error ? error.message : String(error) },
+      { message: "Unexpected error." },
       { status: 500, headers: corsHeaders }
     );
   }
@@ -162,10 +161,9 @@ export async function DELETE(
 
     await prisma.form.delete({ where: { id } });
     return NextResponse.json({ message: "Delete successfull", status: 200, headers: corsHeaders });
-  } catch (error) {
-    console.error("Form DELETE error:", error);
+  } catch {
     return NextResponse.json(
-      { message: "Unexpected error.", detail: error instanceof Error ? error.message : String(error) },
+      { message: "Unexpected error." },
       { status: 500, headers: corsHeaders }
     );
   }
